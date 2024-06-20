@@ -2,23 +2,31 @@ package database
 
 import (
 	"fmt"
+	"log"
 
+	"github.com/hazitgi/go_gin_server/models"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
-var Db *gorm.DB
+var DB *gorm.DB
 
-func ConnectDB() {
-	db, err := gorm.Open(sqlite.Open("go_gin_app.db"), &gorm.Config{})
+func Initialize() {
+	var err error
+	DB, err = gorm.Open(sqlite.Open("go_gin_app.db"), &gorm.Config{})
 	if err != nil {
 		panic("failed to connect database")
 	}
 	fmt.Println("Database connected successfully")
 
-	Db = db
+	if err := DB.AutoMigrate(&models.User{}); err != nil {
+		log.Fatalln("failed to migrate tables")
+	}
 }
 
 func GetDb() *gorm.DB {
-	return Db
+	if DB == nil {
+		log.Fatalln("Db connection isn't initialized!")
+	}
+	return DB
 }

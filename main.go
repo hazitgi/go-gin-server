@@ -2,10 +2,15 @@ package main
 
 import (
 	"log"
+	"time"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+
+	// "github.com/hazitgi/go_gin_server/apis"
 	"github.com/hazitgi/go_gin_server/database"
+	"github.com/hazitgi/go_gin_server/handlers"
+	"github.com/hazitgi/go_gin_server/managers"
 )
 
 func main() {
@@ -13,7 +18,15 @@ func main() {
 	router := gin.Default()
 	gin.SetMode(gin.DebugMode)
 	// init CORS middleware
-	router.Use(cors.Default())
+	// Configure CORS middleware
+    router.Use(cors.New(cors.Config{
+        AllowOrigins:     []string{"*"}, // Replace with your frontend URL
+        AllowMethods:     []string{"GET, POST, PATCH, PUT, DELETE, OPTIONS, HEAD"},
+        AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
+        ExposeHeaders:    []string{"Content-Length"},
+        AllowCredentials: true,
+        MaxAge:           12 * time.Hour,
+    }))
 
 	// initioalize database
 	initDB()
@@ -25,11 +38,15 @@ func main() {
 		})
 	})
 
+	userManager := managers.NewUserManager()
+	userHandler := handlers.NewUserHandlerFrom(userManager)
+	userHandler.RegisterUserRoutes(router)
+
 	if err := router.Run(":8000"); err != nil {
 		log.Fatal("Failed to start server", err)
 	}
 }
 
 func initDB() {
-	database.ConnectDB()
+	database.Initialize()
 }

@@ -2,7 +2,9 @@ version: "3.8"
 
 services:
   golang-app:
-    build: .
+    build: 
+      context: .
+      dockerfile: Dockerfile
     container_name: go-gin-server
     ports:
       - "5000:8000"
