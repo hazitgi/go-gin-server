@@ -1,12 +1,12 @@
 package common
 
 type UserCreationInput struct {
-	FullName string `json:"full_name"`
+	FullName string `json:"fullName"`
 	Email    string `json:"email"`
 }
 
 type UserUpdateInput struct {
-	FullName string `json:"full_name,omitempty"`
+	FullName string `json:"fullName,omitempty"`
 	Email    string `json:"email,omitempty"`
 }
 

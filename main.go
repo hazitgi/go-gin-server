@@ -2,7 +2,7 @@ package main
 
 import (
 	"log"
-	"time"
+	// "time"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -11,32 +11,36 @@ import (
 	"github.com/hazitgi/go_gin_server/database"
 	"github.com/hazitgi/go_gin_server/handlers"
 	"github.com/hazitgi/go_gin_server/managers"
+	// "github.com/hazitgi/go_gin_server/middleware"
 )
 
 func main() {
 	// Create a gin router
-	router := gin.Default()
 	gin.SetMode(gin.DebugMode)
+	router := gin.Default()
+	// router.Use(middleware.ConfigureCORSMiddleware())
 	// init CORS middleware
-	// Configure CORS middleware
-    router.Use(cors.New(cors.Config{
-        AllowOrigins:     []string{"*"}, // Replace with your frontend URL
-        AllowMethods:     []string{"GET, POST, PATCH, PUT, DELETE, OPTIONS, HEAD"},
-        AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
-        ExposeHeaders:    []string{"Content-Length"},
-        AllowCredentials: true,
-        MaxAge:           12 * time.Hour,
-    }))
+	router.Use(cors.Default())
+	// router.Use(cors.New(cors.Config{
+    //     AllowOrigins:     []string{"*"}, // Replace with your frontend URL
+    //     AllowMethods:     []string{"GET, POST, PATCH, PUT, DELETE, OPTIONS, HEAD"},
+    //     AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
+    //     ExposeHeaders:    []string{"Content-Length"},
+    //     AllowCredentials: true,
+    //     MaxAge:           12 * time.Hour,
+    // }))
+
+	// router.OPTIONS("/", func(c *gin.Context) {
+	// 	c.Header("Access-Control-Allow-Origin", "http://localhost:3000")
+	// 	c.Header("Access-Control-Allow-Methods", "GET, POST, PATCH, PUT, DELETE, OPTIONS")
+	// 	c.Header("Access-Control-Allow-Headers", "Origin, Content-Type, Accept, Authorization")
+	// 	c.Header("Access-Control-Allow-Credentials", "true")
+	// 	c.JSON(200, gin.H{"message": "OPTIONS request handled"})
+	// })
+	
 
 	// initioalize database
 	initDB()
-
-	router.GET("/ping", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "pong",
-			"version": "v1.0.0",
-		})
-	})
 
 	userManager := managers.NewUserManager()
 	userHandler := handlers.NewUserHandlerFrom(userManager)

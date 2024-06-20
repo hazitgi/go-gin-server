@@ -12,6 +12,6 @@ type User struct {
 	CreatedAt time.Time      `json:"created_at"`
 	UpdatedAt time.Time      `json:"updated_at"`
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
-	FullName  string         `json:"full_name"`
+	FullName  string         `json:"fullName"`
 	Email     string         `json:"email"`
 }
