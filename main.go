@@ -9,10 +9,10 @@ import (
 	"github.com/joho/godotenv"
 
 	// "github.com/hazitgi/go_gin_server/apis"
+	"github.com/gin-contrib/static"
 	"github.com/hazitgi/go_gin_server/database"
 	"github.com/hazitgi/go_gin_server/handlers"
 	"github.com/hazitgi/go_gin_server/managers"
-	"github.com/gin-contrib/static"
 )
 
 func main() {
@@ -27,7 +27,7 @@ func main() {
 	} else {
 		gin.SetMode(gin.ReleaseMode)
 		config := cors.DefaultConfig()
-		config.AllowOrigins = []string{"https://hazitgi.github.io/", "http://localhost:8000"}
+		config.AllowOrigins = []string{"https://hazitgi.github.io/", "http://localhost:8000", "http://localhost:8000",}
 		router.Use(cors.Default())
 	}
 
@@ -45,8 +45,13 @@ func main() {
 	router.Use(static.Serve("/home", static.LocalFile("views/build", false)))
 
 	userManager := managers.NewUserManager()
+	skillManager := managers.NewSkillManager()
+
 	userHandler := handlers.NewUserHandlerFrom(userManager)
+	skillHandler := handlers.NewSkillHandlerFrom(skillManager)
+
 	userHandler.RegisterUserRoutes(router)
+	skillHandler.RegisterEndpoints(router)
 
 	if err := router.Run(":8000"); err != nil {
 		log.Fatal("Failed to start server", err)
