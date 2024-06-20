@@ -25,22 +25,27 @@ func NewUserHandlerFrom(userManager *managers.UserManager) *UserHandler {
 
 func (userHandler *UserHandler) RegisterUserRoutes(r *gin.Engine) {
 	userGroup := r.Group(userHandler.groupName)
-	// userGroup.POST("", userHandler.ListUser)
+	userGroup.GET("", userHandler.ListUsers)
 	userGroup.POST("", userHandler.Create)
 }
 
 func (userHandler *UserHandler) Create(ctx *gin.Context) {
 	userData := common.NewUserCreationInput()
-
 	if err := ctx.BindJSON(&userData); err != nil {
 		fmt.Println("failed to bind json: ", err)
 	}
 	fmt.Println(userData)
-
 	newUser, err := userHandler.UserManager.Create(userData)
 	if err != nil {
 		fmt.Println("failed to create user: ", err)
 	}
-
 	ctx.JSON(http.StatusOK, newUser)
+}
+
+func (userHandler *UserHandler) ListUsers(ctx *gin.Context) {
+	users, err := userHandler.UserManager.List()
+	if err != nil {
+		fmt.Println("failed to list users: ", err)
+	}
+	ctx.JSON(http.StatusOK, users)
 }

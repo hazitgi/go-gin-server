@@ -2,7 +2,6 @@ package managers
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/hazitgi/go_gin_server/common"
 	"github.com/hazitgi/go_gin_server/database"
@@ -23,7 +22,6 @@ func (userMgr *UserManager) Create(userData *common.UserCreationInput) (*models.
 		Email:    userData.Email,
 	}
 
-	fmt.Println(newUser, ">>>>>>>>>>>>>>>>>>")
 	database.GetDb().Create(newUser)
 
 	if newUser.ID == 0 {
@@ -31,4 +29,10 @@ func (userMgr *UserManager) Create(userData *common.UserCreationInput) (*models.
 	}
 
 	return newUser, nil
+}
+
+func (userMgr *UserManager) List() ([]models.User, error) {
+	users := []models.User{}
+	database.GetDb().Find(&users)
+	return users, nil
 }
