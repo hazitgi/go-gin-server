@@ -29,7 +29,7 @@ func (userHandler *UserHandler) RegisterUserRoutes(r *gin.Engine) {
 	userGroup.GET(":userId", userHandler.Detail)
 	userGroup.DELETE(":userId", userHandler.Delete)
 	userGroup.POST("", userHandler.Create)
-	userGroup.PUT(":userId", userHandler.Update)
+	userGroup.PATCH(":userId", userHandler.Update)
 }
 
 func (userHandler *UserHandler) Create(ctx *gin.Context) {

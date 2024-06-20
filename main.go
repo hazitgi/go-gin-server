@@ -12,6 +12,7 @@ import (
 	"github.com/hazitgi/go_gin_server/handlers"
 	"github.com/hazitgi/go_gin_server/managers"
 	// "github.com/hazitgi/go_gin_server/middleware"
+	"github.com/gin-contrib/static"
 )
 
 func main() {
@@ -22,13 +23,13 @@ func main() {
 	// init CORS middleware
 	router.Use(cors.Default())
 	// router.Use(cors.New(cors.Config{
-    //     AllowOrigins:     []string{"*"}, // Replace with your frontend URL
-    //     AllowMethods:     []string{"GET, POST, PATCH, PUT, DELETE, OPTIONS, HEAD"},
-    //     AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
-    //     ExposeHeaders:    []string{"Content-Length"},
-    //     AllowCredentials: true,
-    //     MaxAge:           12 * time.Hour,
-    // }))
+	//     AllowOrigins:     []string{"*"}, // Replace with your frontend URL
+	//     AllowMethods:     []string{"GET, POST, PATCH, PUT, DELETE, OPTIONS, HEAD"},
+	//     AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
+	//     ExposeHeaders:    []string{"Content-Length"},
+	//     AllowCredentials: true,
+	//     MaxAge:           12 * time.Hour,
+	// }))
 
 	// router.OPTIONS("/", func(c *gin.Context) {
 	// 	c.Header("Access-Control-Allow-Origin", "http://localhost:3000")
@@ -37,10 +38,19 @@ func main() {
 	// 	c.Header("Access-Control-Allow-Credentials", "true")
 	// 	c.JSON(200, gin.H{"message": "OPTIONS request handled"})
 	// })
-	
 
 	// initioalize database
 	initDB()
+
+	router.Use(static.Serve("/", static.LocalFile("views/build", false)))
+	router.Use(static.Serve("/login", static.LocalFile("views/build", false)))
+	router.Use(static.Serve("/skill-groups/:groupId", static.LocalFile("views/build", false)))
+	router.Use(static.Serve("/skill-groups", static.LocalFile("views/build", false)))
+	router.Use(static.Serve("/skills/:skillId", static.LocalFile("views/build", false)))
+	router.Use(static.Serve("/users", static.LocalFile("views/build", false)))
+	router.Use(static.Serve("/users/*", static.LocalFile("views/build", false)))
+	router.Use(static.Serve("/skills", static.LocalFile("views/build", false)))
+	router.Use(static.Serve("/home", static.LocalFile("views/build", false)))
 
 	userManager := managers.NewUserManager()
 	userHandler := handlers.NewUserHandlerFrom(userManager)
