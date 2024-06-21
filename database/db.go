@@ -19,7 +19,11 @@ func Initialize() {
 	}
 	fmt.Println("Database connected successfully")
 
-	if err := DB.AutoMigrate(&models.User{}, &models.Skill{}, &models.SkillGroup{}, &models.UserSkillRank{}); err != nil {
+	if err := DB.AutoMigrate(
+		&models.User{},
+		&models.Skill{},
+		&models.SkillGroup{},
+		&models.Competence{}); err != nil {
 		log.Fatalln("failed to migrate tables")
 	}
 }

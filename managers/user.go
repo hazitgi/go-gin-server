@@ -14,6 +14,7 @@ type UserManager interface {
 	Get(id string) (models.User, error)
 	Delete(id string) error
 	Update(userId string, userData *common.UserUpdateInput) (models.User, error)
+	AddNewSkill(userId string, userData *common.CompetenceInput) (*models.User, error)
 }
 type userManager struct {
 	// dbClient *gorm.DB
@@ -43,7 +44,7 @@ func (userMgr *userManager) List() ([]models.User, error) {
 
 func (userMgr *userManager) Get(id string) (models.User, error) {
 	user := models.User{}
-	database.GetDb().First(&user, id)
+	database.GetDb().Preload("Competence").Preload("Competence.Skill").Preload("Competence.Skill.SkillGroup").First(&user, id)
 	return user, nil
 }
 
@@ -74,4 +75,31 @@ func (userMgr *userManager) Update(userId string, userData *common.UserUpdateInp
 		return user, updateResult.Error
 	}
 	return user, nil
+}
+
+func (userMgr *userManager) AddNewSkill(userId string, inputData *common.CompetenceInput) (*models.User, error) {
+	user := models.NewUser()
+
+	database.GetDb().First(user, userId)
+
+	if user.ID == 0 {
+		return nil, errors.New("no user found")
+	}
+
+	skill := models.NewSkill()
+
+	database.GetDb().First(skill, inputData.Skill)
+
+	competenceObj := models.NewCompetence()
+	competenceObj.User = *user
+	competenceObj.Skill = *skill
+	competenceObj.Rank = inputData.Rank
+	database.GetDb().Create(competenceObj)
+	database.GetDb().Model(user).Preload("Competence").Preload("Competence.Skill").Preload("Competence.Skill.SkillGroup").Find(user)
+
+	return user, nil
+}
+
+func (userMgr *userManager) prefetchUser(user *models.User) {
+	database.GetDb().Model(user).Preload("Competence").Preload("Competence.Skill").Preload("Competence.Skill.SkillGroup").Find(user)
 }

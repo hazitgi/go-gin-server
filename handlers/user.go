@@ -13,7 +13,7 @@ import (
 
 type UserHandler struct {
 	groupName   string
-	UserManager managers.UserManager
+	userManager managers.UserManager
 }
 
 func NewUserHandlerFrom(userManager managers.UserManager) *UserHandler {
@@ -26,9 +26,10 @@ func NewUserHandlerFrom(userManager managers.UserManager) *UserHandler {
 func (userHandler *UserHandler) RegisterUserRoutes(r *gin.Engine) {
 	userGroup := r.Group(userHandler.groupName)
 	userGroup.GET("", userHandler.ListUsers)
+	userGroup.POST("", userHandler.Create)
+	userGroup.POST(":userId/skills", userHandler.AddSkill)
 	userGroup.GET(":userId", userHandler.Detail)
 	userGroup.DELETE(":userId", userHandler.Delete)
-	userGroup.POST("", userHandler.Create)
 	userGroup.PATCH(":userId", userHandler.Update)
 }
 
@@ -40,7 +41,7 @@ func (userHandler *UserHandler) Create(ctx *gin.Context) {
 		return
 	}
 	fmt.Println(userData)
-	newUser, err := userHandler.UserManager.Create(userData)
+	newUser, err := userHandler.userManager.Create(userData)
 	if err != nil {
 		fmt.Println("failed to create user: ", err)
 		common.InternalServerError(ctx, "failed to create user", err.Error())
@@ -50,7 +51,7 @@ func (userHandler *UserHandler) Create(ctx *gin.Context) {
 }
 
 func (userHandler *UserHandler) ListUsers(ctx *gin.Context) {
-	users, err := userHandler.UserManager.List()
+	users, err := userHandler.userManager.List()
 	if err != nil {
 		fmt.Println("failed to list users: ", err)
 		common.InternalServerError(ctx, "failed to get users", err.Error())
@@ -65,7 +66,7 @@ func (userHandler *UserHandler) Detail(ctx *gin.Context) {
 		fmt.Println("invalid userId")
 		common.InternalServerError(ctx, "userId is required", nil)
 	}
-	user, err := userHandler.UserManager.Get(userId)
+	user, err := userHandler.userManager.Get(userId)
 
 	if user.ID == 0 {
 		common.InternalServerError(ctx, "requested user not found", err.Error())
@@ -82,7 +83,7 @@ func (userHandler *UserHandler) Delete(ctx *gin.Context) {
 	if !ok {
 		fmt.Println("invalid userId")
 	}
-	err := userHandler.UserManager.Delete(userId)
+	err := userHandler.userManager.Delete(userId)
 	if err != nil {
 		fmt.Println("failed to list users: ", err)
 		common.InternalServerError(ctx, "failed to delete user", err.Error())
@@ -104,11 +105,37 @@ func (userHandler *UserHandler) Update(ctx *gin.Context) {
 		fmt.Println("invalid userId")
 		common.BadResponse(ctx, "userId is required", nil)
 	}
-	newUser, err := userHandler.UserManager.Update(userId, userData)
+	newUser, err := userHandler.userManager.Update(userId, userData)
 	if err != nil {
 		fmt.Println("failed to update user: ", err)
 		common.InternalServerError(ctx, "failed to update user", err.Error())
 		return
 	}
 	common.SuccessResponse(ctx, "user updated", newUser)
+}
+
+func (handler *UserHandler) AddSkill(ctx *gin.Context) {
+	fmt.Println(">>>>>>>>>>>>>>>>>>>>>>..")
+	userId, ok := ctx.Params.Get("userId")
+
+	if !ok {
+		common.BadResponse(ctx, "failed to delete user", nil)
+		return
+	}
+
+	userData := common.NewCompetenceInput()
+
+	err := ctx.BindJSON(&userData)
+	if err != nil {
+		common.BadResponse(ctx, "failed to bind data", err.Error())
+		return
+	}
+
+	user, err := handler.userManager.AddNewSkill(userId, userData)
+	if err != nil {
+		common.BadResponse(ctx, err.Error(), nil)
+		return
+	}
+
+	common.SuccessResponse(ctx, "success", user)
 }

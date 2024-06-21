@@ -34,7 +34,7 @@ func NewSkillManager() SkillManager {
 }
 
 func (skillMgr *skillManager) Create(inputData *common.SkillCreationInput) (*models.Skill, error) {
-	newSkillObj := &models.Skill{Name: inputData.Name}
+	newSkillObj := &models.Skill{Name: inputData.Name, SkillGroupID: inputData.Group}
 	database.GetDb().Create(newSkillObj)
 	if newSkillObj.ID == 0 {
 		return nil, errors.New("skill creation failed")
@@ -46,7 +46,7 @@ func (skillMgr *skillManager) Create(inputData *common.SkillCreationInput) (*mod
 func (skillMgr *skillManager) List() ([]models.Skill, error) {
 	skillObj := []models.Skill{}
 
-	result := database.GetDb().Find(&skillObj)
+	result := database.GetDb().Preload("SkillGroup").Find(&skillObj)
 	if result.Error != nil {
 		return nil, result.Error
 	}
@@ -56,7 +56,7 @@ func (skillMgr *skillManager) List() ([]models.Skill, error) {
 func (skillMgr *skillManager) Get(id string) (*models.Skill, error) {
 	skillObj := models.NewSkill()
 
-	result := database.GetDb().First(skillObj, id)
+	result := database.GetDb().Preload("SkillGroup").First(skillObj, id)
 	if result.Error != nil {
 		return nil, result.Error
 	}
