@@ -2,12 +2,14 @@ package main
 
 import (
 	"log"
-	"time"
+	"os"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 
 	// "github.com/hazitgi/go_gin_server/apis"
+	"github.com/gin-contrib/static"
 	"github.com/hazitgi/go_gin_server/database"
 	"github.com/hazitgi/go_gin_server/handlers"
 	"github.com/hazitgi/go_gin_server/managers"
@@ -16,31 +18,40 @@ import (
 func main() {
 	// Create a gin router
 	router := gin.Default()
-	gin.SetMode(gin.DebugMode)
-	// init CORS middleware
-	// Configure CORS middleware
-    router.Use(cors.New(cors.Config{
-        AllowOrigins:     []string{"*"}, // Replace with your frontend URL
-        AllowMethods:     []string{"GET, POST, PATCH, PUT, DELETE, OPTIONS, HEAD"},
-        AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
-        ExposeHeaders:    []string{"Content-Length"},
-        AllowCredentials: true,
-        MaxAge:           12 * time.Hour,
-    }))
+
+	_ = godotenv.Load(".env")
+	env := os.Getenv("ENV")
+	if env == "development" {
+		gin.SetMode(gin.DebugMode)
+		router.Use(cors.Default())
+	} else {
+		gin.SetMode(gin.ReleaseMode)
+		config := cors.DefaultConfig()
+		config.AllowOrigins = []string{"https://hazitgi.github.io/", "http://localhost:8000", "http://localhost:8000",}
+		router.Use(cors.Default())
+	}
 
 	// initioalize database
 	initDB()
 
-	router.GET("/ping", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "pong",
-			"version": "v1.0.0",
-		})
-	})
+	router.Use(static.Serve("/", static.LocalFile("views/build", false)))
+	router.Use(static.Serve("/login", static.LocalFile("views/build", false)))
+	router.Use(static.Serve("/skill-groups/:groupId", static.LocalFile("views/build", false)))
+	router.Use(static.Serve("/skill-groups", static.LocalFile("views/build", false)))
+	router.Use(static.Serve("/skills/:skillId", static.LocalFile("views/build", false)))
+	router.Use(static.Serve("/users", static.LocalFile("views/build", false)))
+	router.Use(static.Serve("/users/*", static.LocalFile("views/build", false)))
+	router.Use(static.Serve("/skills", static.LocalFile("views/build", false)))
+	router.Use(static.Serve("/home", static.LocalFile("views/build", false)))
 
 	userManager := managers.NewUserManager()
+	skillManager := managers.NewSkillManager()
+
 	userHandler := handlers.NewUserHandlerFrom(userManager)
+	skillHandler := handlers.NewSkillHandlerFrom(skillManager)
+
 	userHandler.RegisterUserRoutes(router)
+	skillHandler.RegisterEndpoints(router)
 
 	if err := router.Run(":8000"); err != nil {
 		log.Fatal("Failed to start server", err)
