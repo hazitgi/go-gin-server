@@ -38,7 +38,7 @@ func (userMgr *userManager) Create(userData *common.UserCreationInput) (*models.
 
 func (userMgr *userManager) List() ([]models.User, error) {
 	users := []models.User{}
-	database.GetDb().Find(&users)
+	database.GetDb().Preload("Competence").Preload("Competence.Skill").Find(&users)
 	return users, nil
 }
 
